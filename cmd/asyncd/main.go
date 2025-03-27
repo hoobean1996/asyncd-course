@@ -11,6 +11,8 @@ import (
 	"fs.io/asyncd/ent/migrate"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi"
+	"github.com/rs/cors"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -37,15 +39,17 @@ func main() {
 	{
 		client.EntTask.Create().SetHandler("echo3").SetPriority(1).SetParameter("xxx").Save(context.Background())
 	}
-
+	router := chi.NewRouter()
+	router.Use(cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+		Debug:            false,
+	}).Handler)
 	// Configure the server and start listening on :8081.
 	srv := handler.NewDefaultServer(asyncd.NewSchema(client))
-	http.Handle("/",
-		playground.Handler("Todo", "/query"),
-	)
-	http.Handle("/query", srv)
-	log.Println("listening on :8081")
-	if err := http.ListenAndServe(":8081", nil); err != nil {
-		log.Fatal("http server terminated", err)
+	router.Handle("/", playground.Handler("Asynd", "/graphql"))
+	router.Handle("/graphql", srv)
+	if err := http.ListenAndServe(":8081", router); err != nil {
+		log.Fatalf("failed to start server: %v", err)
 	}
 }
