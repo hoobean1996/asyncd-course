@@ -7,6 +7,7 @@ package asyncd
 import (
 	"context"
 
+	"entgo.io/contrib/entgql"
 	"fs.io/asyncd/ent"
 )
 
@@ -24,8 +25,13 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []int) ([]ent.Noder, erro
 
 // EntTasks is the resolver for the entTasks field.
 // entTasks 查询所有的任务的
-func (r *queryResolver) EntTasks(ctx context.Context) ([]*ent.EntTask, error) {
-	return r.client.EntTask.Query().All(ctx)
+func (r *queryResolver) EntTasks(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int) (*ent.EntTaskConnection, error) {
+	return r.client.EntTask.Query().Paginate(ctx, after, first, before, last)
+}
+
+// EntTaskHandlers is the resolver for the entTaskHandlers field.
+func (r *queryResolver) EntTaskHandlers(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int) (*ent.EntTaskHandlerConnection, error) {
+	return r.client.EntTaskHandler.Query().Paginate(ctx, after, first, before, last)
 }
 
 // Query returns QueryResolver implementation.

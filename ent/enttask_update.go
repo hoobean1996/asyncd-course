@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -76,6 +77,18 @@ func (etu *EntTaskUpdate) AddPriority(i int) *EntTaskUpdate {
 	return etu
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (etu *EntTaskUpdate) SetCreatedAt(t time.Time) *EntTaskUpdate {
+	etu.mutation.SetCreatedAt(t)
+	return etu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (etu *EntTaskUpdate) SetUpdatedAt(t time.Time) *EntTaskUpdate {
+	etu.mutation.SetUpdatedAt(t)
+	return etu
+}
+
 // Mutation returns the EntTaskMutation object of the builder.
 func (etu *EntTaskUpdate) Mutation() *EntTaskMutation {
 	return etu.mutation
@@ -83,6 +96,7 @@ func (etu *EntTaskUpdate) Mutation() *EntTaskMutation {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (etu *EntTaskUpdate) Save(ctx context.Context) (int, error) {
+	etu.defaults()
 	return withHooks(ctx, etu.sqlSave, etu.mutation, etu.hooks)
 }
 
@@ -108,6 +122,18 @@ func (etu *EntTaskUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (etu *EntTaskUpdate) defaults() {
+	if _, ok := etu.mutation.CreatedAt(); !ok {
+		v := enttask.UpdateDefaultCreatedAt()
+		etu.mutation.SetCreatedAt(v)
+	}
+	if _, ok := etu.mutation.UpdatedAt(); !ok {
+		v := enttask.UpdateDefaultUpdatedAt()
+		etu.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (etu *EntTaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := sqlgraph.NewUpdateSpec(enttask.Table, enttask.Columns, sqlgraph.NewFieldSpec(enttask.FieldID, field.TypeInt))
 	if ps := etu.mutation.predicates; len(ps) > 0 {
@@ -128,6 +154,12 @@ func (etu *EntTaskUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := etu.mutation.AddedPriority(); ok {
 		_spec.AddField(enttask.FieldPriority, field.TypeInt, value)
+	}
+	if value, ok := etu.mutation.CreatedAt(); ok {
+		_spec.SetField(enttask.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := etu.mutation.UpdatedAt(); ok {
+		_spec.SetField(enttask.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, etu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -198,6 +230,18 @@ func (etuo *EntTaskUpdateOne) AddPriority(i int) *EntTaskUpdateOne {
 	return etuo
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (etuo *EntTaskUpdateOne) SetCreatedAt(t time.Time) *EntTaskUpdateOne {
+	etuo.mutation.SetCreatedAt(t)
+	return etuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (etuo *EntTaskUpdateOne) SetUpdatedAt(t time.Time) *EntTaskUpdateOne {
+	etuo.mutation.SetUpdatedAt(t)
+	return etuo
+}
+
 // Mutation returns the EntTaskMutation object of the builder.
 func (etuo *EntTaskUpdateOne) Mutation() *EntTaskMutation {
 	return etuo.mutation
@@ -218,6 +262,7 @@ func (etuo *EntTaskUpdateOne) Select(field string, fields ...string) *EntTaskUpd
 
 // Save executes the query and returns the updated EntTask entity.
 func (etuo *EntTaskUpdateOne) Save(ctx context.Context) (*EntTask, error) {
+	etuo.defaults()
 	return withHooks(ctx, etuo.sqlSave, etuo.mutation, etuo.hooks)
 }
 
@@ -240,6 +285,18 @@ func (etuo *EntTaskUpdateOne) Exec(ctx context.Context) error {
 func (etuo *EntTaskUpdateOne) ExecX(ctx context.Context) {
 	if err := etuo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (etuo *EntTaskUpdateOne) defaults() {
+	if _, ok := etuo.mutation.CreatedAt(); !ok {
+		v := enttask.UpdateDefaultCreatedAt()
+		etuo.mutation.SetCreatedAt(v)
+	}
+	if _, ok := etuo.mutation.UpdatedAt(); !ok {
+		v := enttask.UpdateDefaultUpdatedAt()
+		etuo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -280,6 +337,12 @@ func (etuo *EntTaskUpdateOne) sqlSave(ctx context.Context) (_node *EntTask, err 
 	}
 	if value, ok := etuo.mutation.AddedPriority(); ok {
 		_spec.AddField(enttask.FieldPriority, field.TypeInt, value)
+	}
+	if value, ok := etuo.mutation.CreatedAt(); ok {
+		_spec.SetField(enttask.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := etuo.mutation.UpdatedAt(); ok {
+		_spec.SetField(enttask.FieldUpdatedAt, field.TypeTime, value)
 	}
 	_node = &EntTask{config: etuo.config}
 	_spec.Assign = _node.assignValues

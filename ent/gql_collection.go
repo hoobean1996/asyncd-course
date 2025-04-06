@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"fs.io/asyncd/ent/enttask"
+	"fs.io/asyncd/ent/enttaskhandler"
 	"github.com/99designs/gqlgen/graphql"
 )
 
@@ -45,6 +46,16 @@ func (et *EntTaskQuery) collectField(ctx context.Context, oneNode bool, opCtx *g
 				selectedFields = append(selectedFields, enttask.FieldPriority)
 				fieldSeen[enttask.FieldPriority] = struct{}{}
 			}
+		case "createdAt":
+			if _, ok := fieldSeen[enttask.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, enttask.FieldCreatedAt)
+				fieldSeen[enttask.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[enttask.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, enttask.FieldUpdatedAt)
+				fieldSeen[enttask.FieldUpdatedAt] = struct{}{}
+			}
 		case "id":
 		case "__typename":
 		default:
@@ -65,6 +76,85 @@ type enttaskPaginateArgs struct {
 
 func newEntTaskPaginateArgs(rv map[string]any) *enttaskPaginateArgs {
 	args := &enttaskPaginateArgs{}
+	if rv == nil {
+		return args
+	}
+	if v := rv[firstField]; v != nil {
+		args.first = v.(*int)
+	}
+	if v := rv[lastField]; v != nil {
+		args.last = v.(*int)
+	}
+	if v := rv[afterField]; v != nil {
+		args.after = v.(*Cursor)
+	}
+	if v := rv[beforeField]; v != nil {
+		args.before = v.(*Cursor)
+	}
+	return args
+}
+
+// CollectFields tells the query-builder to eagerly load connected nodes by resolver context.
+func (eth *EntTaskHandlerQuery) CollectFields(ctx context.Context, satisfies ...string) (*EntTaskHandlerQuery, error) {
+	fc := graphql.GetFieldContext(ctx)
+	if fc == nil {
+		return eth, nil
+	}
+	if err := eth.collectField(ctx, false, graphql.GetOperationContext(ctx), fc.Field, nil, satisfies...); err != nil {
+		return nil, err
+	}
+	return eth, nil
+}
+
+func (eth *EntTaskHandlerQuery) collectField(ctx context.Context, oneNode bool, opCtx *graphql.OperationContext, collected graphql.CollectedField, path []string, satisfies ...string) error {
+	path = append([]string(nil), path...)
+	var (
+		unknownSeen    bool
+		fieldSeen      = make(map[string]struct{}, len(enttaskhandler.Columns))
+		selectedFields = []string{enttaskhandler.FieldID}
+	)
+	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
+		switch field.Name {
+		case "name":
+			if _, ok := fieldSeen[enttaskhandler.FieldName]; !ok {
+				selectedFields = append(selectedFields, enttaskhandler.FieldName)
+				fieldSeen[enttaskhandler.FieldName] = struct{}{}
+			}
+		case "signature":
+			if _, ok := fieldSeen[enttaskhandler.FieldSignature]; !ok {
+				selectedFields = append(selectedFields, enttaskhandler.FieldSignature)
+				fieldSeen[enttaskhandler.FieldSignature] = struct{}{}
+			}
+		case "createdAt":
+			if _, ok := fieldSeen[enttaskhandler.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, enttaskhandler.FieldCreatedAt)
+				fieldSeen[enttaskhandler.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[enttaskhandler.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, enttaskhandler.FieldUpdatedAt)
+				fieldSeen[enttaskhandler.FieldUpdatedAt] = struct{}{}
+			}
+		case "id":
+		case "__typename":
+		default:
+			unknownSeen = true
+		}
+	}
+	if !unknownSeen {
+		eth.Select(selectedFields...)
+	}
+	return nil
+}
+
+type enttaskhandlerPaginateArgs struct {
+	first, last   *int
+	after, before *Cursor
+	opts          []EntTaskHandlerPaginateOption
+}
+
+func newEntTaskHandlerPaginateArgs(rv map[string]any) *enttaskhandlerPaginateArgs {
+	args := &enttaskhandlerPaginateArgs{}
 	if rv == nil {
 		return args
 	}

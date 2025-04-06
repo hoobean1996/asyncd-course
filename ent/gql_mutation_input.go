@@ -2,11 +2,17 @@
 
 package ent
 
+import (
+	"time"
+)
+
 // CreateEntTaskInput represents a mutation input for creating enttasks.
 type CreateEntTaskInput struct {
 	Handler   string
 	Parameter string
 	Priority  int
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
 }
 
 // Mutate applies the CreateEntTaskInput on the EntTaskMutation builder.
@@ -14,10 +20,118 @@ func (i *CreateEntTaskInput) Mutate(m *EntTaskMutation) {
 	m.SetHandler(i.Handler)
 	m.SetParameter(i.Parameter)
 	m.SetPriority(i.Priority)
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateEntTaskInput on the EntTaskCreate builder.
 func (c *EntTaskCreate) SetInput(i CreateEntTaskInput) *EntTaskCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateEntTaskInput represents a mutation input for updating enttasks.
+type UpdateEntTaskInput struct {
+	Handler   *string
+	Parameter *string
+	Priority  *int
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
+}
+
+// Mutate applies the UpdateEntTaskInput on the EntTaskMutation builder.
+func (i *UpdateEntTaskInput) Mutate(m *EntTaskMutation) {
+	if v := i.Handler; v != nil {
+		m.SetHandler(*v)
+	}
+	if v := i.Parameter; v != nil {
+		m.SetParameter(*v)
+	}
+	if v := i.Priority; v != nil {
+		m.SetPriority(*v)
+	}
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateEntTaskInput on the EntTaskUpdate builder.
+func (c *EntTaskUpdate) SetInput(i UpdateEntTaskInput) *EntTaskUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateEntTaskInput on the EntTaskUpdateOne builder.
+func (c *EntTaskUpdateOne) SetInput(i UpdateEntTaskInput) *EntTaskUpdateOne {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// CreateEntTaskHandlerInput represents a mutation input for creating enttaskhandlers.
+type CreateEntTaskHandlerInput struct {
+	Name      string
+	Signature string
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
+}
+
+// Mutate applies the CreateEntTaskHandlerInput on the EntTaskHandlerMutation builder.
+func (i *CreateEntTaskHandlerInput) Mutate(m *EntTaskHandlerMutation) {
+	m.SetName(i.Name)
+	m.SetSignature(i.Signature)
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+}
+
+// SetInput applies the change-set in the CreateEntTaskHandlerInput on the EntTaskHandlerCreate builder.
+func (c *EntTaskHandlerCreate) SetInput(i CreateEntTaskHandlerInput) *EntTaskHandlerCreate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// UpdateEntTaskHandlerInput represents a mutation input for updating enttaskhandlers.
+type UpdateEntTaskHandlerInput struct {
+	Name      *string
+	Signature *string
+	CreatedAt *time.Time
+	UpdatedAt *time.Time
+}
+
+// Mutate applies the UpdateEntTaskHandlerInput on the EntTaskHandlerMutation builder.
+func (i *UpdateEntTaskHandlerInput) Mutate(m *EntTaskHandlerMutation) {
+	if v := i.Name; v != nil {
+		m.SetName(*v)
+	}
+	if v := i.Signature; v != nil {
+		m.SetSignature(*v)
+	}
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
+}
+
+// SetInput applies the change-set in the UpdateEntTaskHandlerInput on the EntTaskHandlerUpdate builder.
+func (c *EntTaskHandlerUpdate) SetInput(i UpdateEntTaskHandlerInput) *EntTaskHandlerUpdate {
+	i.Mutate(c.Mutation())
+	return c
+}
+
+// SetInput applies the change-set in the UpdateEntTaskHandlerInput on the EntTaskHandlerUpdateOne builder.
+func (c *EntTaskHandlerUpdateOne) SetInput(i UpdateEntTaskHandlerInput) *EntTaskHandlerUpdateOne {
 	i.Mutate(c.Mutation())
 	return c
 }

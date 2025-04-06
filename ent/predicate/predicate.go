@@ -8,3 +8,6 @@ import (
 
 // EntTask is the predicate function for enttask builders.
 type EntTask func(*sql.Selector)
+
+// EntTaskHandler is the predicate function for enttaskhandler builders.
+type EntTaskHandler func(*sql.Selector)

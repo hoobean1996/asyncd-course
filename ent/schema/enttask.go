@@ -1,6 +1,8 @@
 package schema
 
 import (
+	"time"
+
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
 	"entgo.io/ent/schema"
@@ -18,6 +20,8 @@ func (EntTask) Fields() []ent.Field {
 		field.String("handler").Comment("This is the handler of the task"),
 		field.String("parameter").Comment("This is JSON input of the task"),
 		field.Int("priority").Comment("This is the priority of the task"),
+		field.Time("created_at").Default(time.Now).UpdateDefault(time.Now),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}
 }
 
@@ -29,6 +33,7 @@ func (EntTask) Edges() []ent.Edge {
 func (EntTask) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),
-		entgql.Mutations(entgql.MutationCreate()),
+		entgql.RelayConnection(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }

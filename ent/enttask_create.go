@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -37,6 +38,34 @@ func (etc *EntTaskCreate) SetPriority(i int) *EntTaskCreate {
 	return etc
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (etc *EntTaskCreate) SetCreatedAt(t time.Time) *EntTaskCreate {
+	etc.mutation.SetCreatedAt(t)
+	return etc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (etc *EntTaskCreate) SetNillableCreatedAt(t *time.Time) *EntTaskCreate {
+	if t != nil {
+		etc.SetCreatedAt(*t)
+	}
+	return etc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (etc *EntTaskCreate) SetUpdatedAt(t time.Time) *EntTaskCreate {
+	etc.mutation.SetUpdatedAt(t)
+	return etc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (etc *EntTaskCreate) SetNillableUpdatedAt(t *time.Time) *EntTaskCreate {
+	if t != nil {
+		etc.SetUpdatedAt(*t)
+	}
+	return etc
+}
+
 // Mutation returns the EntTaskMutation object of the builder.
 func (etc *EntTaskCreate) Mutation() *EntTaskMutation {
 	return etc.mutation
@@ -44,6 +73,7 @@ func (etc *EntTaskCreate) Mutation() *EntTaskMutation {
 
 // Save creates the EntTask in the database.
 func (etc *EntTaskCreate) Save(ctx context.Context) (*EntTask, error) {
+	etc.defaults()
 	return withHooks(ctx, etc.sqlSave, etc.mutation, etc.hooks)
 }
 
@@ -69,6 +99,18 @@ func (etc *EntTaskCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (etc *EntTaskCreate) defaults() {
+	if _, ok := etc.mutation.CreatedAt(); !ok {
+		v := enttask.DefaultCreatedAt()
+		etc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := etc.mutation.UpdatedAt(); !ok {
+		v := enttask.DefaultUpdatedAt()
+		etc.mutation.SetUpdatedAt(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (etc *EntTaskCreate) check() error {
 	if _, ok := etc.mutation.Handler(); !ok {
@@ -79,6 +121,12 @@ func (etc *EntTaskCreate) check() error {
 	}
 	if _, ok := etc.mutation.Priority(); !ok {
 		return &ValidationError{Name: "priority", err: errors.New(`ent: missing required field "EntTask.priority"`)}
+	}
+	if _, ok := etc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "EntTask.created_at"`)}
+	}
+	if _, ok := etc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "EntTask.updated_at"`)}
 	}
 	return nil
 }
@@ -118,6 +166,14 @@ func (etc *EntTaskCreate) createSpec() (*EntTask, *sqlgraph.CreateSpec) {
 		_spec.SetField(enttask.FieldPriority, field.TypeInt, value)
 		_node.Priority = value
 	}
+	if value, ok := etc.mutation.CreatedAt(); ok {
+		_spec.SetField(enttask.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := etc.mutation.UpdatedAt(); ok {
+		_spec.SetField(enttask.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	return _node, _spec
 }
 
@@ -139,6 +195,7 @@ func (etcb *EntTaskCreateBulk) Save(ctx context.Context) ([]*EntTask, error) {
 	for i := range etcb.builders {
 		func(i int, root context.Context) {
 			builder := etcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*EntTaskMutation)
 				if !ok {

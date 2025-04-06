@@ -21,6 +21,18 @@ func (f EntTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EntTaskMutation", m)
 }
 
+// The EntTaskHandlerFunc type is an adapter to allow the use of ordinary
+// function as EntTaskHandler mutator.
+type EntTaskHandlerFunc func(context.Context, *ent.EntTaskHandlerMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f EntTaskHandlerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.EntTaskHandlerMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EntTaskHandlerMutation", m)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

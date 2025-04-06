@@ -1,9 +1,8 @@
-import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
 import graphql from "babel-plugin-relay/macro";
 import { useLazyLoadQuery } from "react-relay";
 import { AppQuery } from "./__generated__/AppQuery.graphql";
+import "./App.css";
+
 
 export default function App() {
   const data = useLazyLoadQuery<AppQuery>(query, {});

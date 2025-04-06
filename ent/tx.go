@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// EntTask is the client for interacting with the EntTask builders.
 	EntTask *EntTaskClient
+	// EntTaskHandler is the client for interacting with the EntTaskHandler builders.
+	EntTaskHandler *EntTaskHandlerClient
 
 	// lazily loaded.
 	client     *Client
@@ -146,6 +148,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.EntTask = NewEntTaskClient(tx.config)
+	tx.EntTaskHandler = NewEntTaskHandlerClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

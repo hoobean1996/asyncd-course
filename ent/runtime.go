@@ -2,8 +2,44 @@
 
 package ent
 
+import (
+	"time"
+
+	"fs.io/asyncd/ent/enttask"
+	"fs.io/asyncd/ent/enttaskhandler"
+	"fs.io/asyncd/ent/schema"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	enttaskFields := schema.EntTask{}.Fields()
+	_ = enttaskFields
+	// enttaskDescCreatedAt is the schema descriptor for created_at field.
+	enttaskDescCreatedAt := enttaskFields[3].Descriptor()
+	// enttask.DefaultCreatedAt holds the default value on creation for the created_at field.
+	enttask.DefaultCreatedAt = enttaskDescCreatedAt.Default.(func() time.Time)
+	// enttask.UpdateDefaultCreatedAt holds the default value on update for the created_at field.
+	enttask.UpdateDefaultCreatedAt = enttaskDescCreatedAt.UpdateDefault.(func() time.Time)
+	// enttaskDescUpdatedAt is the schema descriptor for updated_at field.
+	enttaskDescUpdatedAt := enttaskFields[4].Descriptor()
+	// enttask.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	enttask.DefaultUpdatedAt = enttaskDescUpdatedAt.Default.(func() time.Time)
+	// enttask.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	enttask.UpdateDefaultUpdatedAt = enttaskDescUpdatedAt.UpdateDefault.(func() time.Time)
+	enttaskhandlerFields := schema.EntTaskHandler{}.Fields()
+	_ = enttaskhandlerFields
+	// enttaskhandlerDescCreatedAt is the schema descriptor for created_at field.
+	enttaskhandlerDescCreatedAt := enttaskhandlerFields[2].Descriptor()
+	// enttaskhandler.DefaultCreatedAt holds the default value on creation for the created_at field.
+	enttaskhandler.DefaultCreatedAt = enttaskhandlerDescCreatedAt.Default.(func() time.Time)
+	// enttaskhandler.UpdateDefaultCreatedAt holds the default value on update for the created_at field.
+	enttaskhandler.UpdateDefaultCreatedAt = enttaskhandlerDescCreatedAt.UpdateDefault.(func() time.Time)
+	// enttaskhandlerDescUpdatedAt is the schema descriptor for updated_at field.
+	enttaskhandlerDescUpdatedAt := enttaskhandlerFields[3].Descriptor()
+	// enttaskhandler.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	enttaskhandler.DefaultUpdatedAt = enttaskhandlerDescUpdatedAt.Default.(func() time.Time)
+	// enttaskhandler.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	enttaskhandler.UpdateDefaultUpdatedAt = enttaskhandlerDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

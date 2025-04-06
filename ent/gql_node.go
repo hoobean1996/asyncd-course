@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
 	"fs.io/asyncd/ent/enttask"
+	"fs.io/asyncd/ent/enttaskhandler"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/hashicorp/go-multierror"
 	"golang.org/x/sync/semaphore"
@@ -27,6 +28,11 @@ var enttaskImplementors = []string{"EntTask", "Node"}
 
 // IsNode implements the Node interface check for GQLGen.
 func (*EntTask) IsNode() {}
+
+var enttaskhandlerImplementors = []string{"EntTaskHandler", "Node"}
+
+// IsNode implements the Node interface check for GQLGen.
+func (*EntTaskHandler) IsNode() {}
 
 var errNodeInvalidID = &NotFoundError{"node"}
 
@@ -91,6 +97,15 @@ func (c *Client) noder(ctx context.Context, table string, id int) (Noder, error)
 			Where(enttask.ID(id))
 		if fc := graphql.GetFieldContext(ctx); fc != nil {
 			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, enttaskImplementors...); err != nil {
+				return nil, err
+			}
+		}
+		return query.Only(ctx)
+	case enttaskhandler.Table:
+		query := c.EntTaskHandler.Query().
+			Where(enttaskhandler.ID(id))
+		if fc := graphql.GetFieldContext(ctx); fc != nil {
+			if err := query.collectField(ctx, true, graphql.GetOperationContext(ctx), fc.Field, nil, enttaskhandlerImplementors...); err != nil {
 				return nil, err
 			}
 		}
@@ -172,6 +187,22 @@ func (c *Client) noders(ctx context.Context, table string, ids []int) ([]Noder, 
 		query := c.EntTask.Query().
 			Where(enttask.IDIn(ids...))
 		query, err := query.CollectFields(ctx, enttaskImplementors...)
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, node := range nodes {
+			for _, noder := range idmap[node.ID] {
+				*noder = node
+			}
+		}
+	case enttaskhandler.Table:
+		query := c.EntTaskHandler.Query().
+			Where(enttaskhandler.IDIn(ids...))
+		query, err := query.CollectFields(ctx, enttaskhandlerImplementors...)
 		if err != nil {
 			return nil, err
 		}

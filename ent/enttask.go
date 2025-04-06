@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -21,7 +22,11 @@ type EntTask struct {
 	// This is JSON input of the task
 	Parameter string `json:"parameter,omitempty"`
 	// This is the priority of the task
-	Priority     int `json:"priority,omitempty"`
+	Priority int `json:"priority,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -34,6 +39,8 @@ func (*EntTask) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case enttask.FieldHandler, enttask.FieldParameter:
 			values[i] = new(sql.NullString)
+		case enttask.FieldCreatedAt, enttask.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -72,6 +79,18 @@ func (et *EntTask) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field priority", values[i])
 			} else if value.Valid {
 				et.Priority = int(value.Int64)
+			}
+		case enttask.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				et.CreatedAt = value.Time
+			}
+		case enttask.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				et.UpdatedAt = value.Time
 			}
 		default:
 			et.selectValues.Set(columns[i], values[i])
@@ -117,6 +136,12 @@ func (et *EntTask) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("priority=")
 	builder.WriteString(fmt.Sprintf("%v", et.Priority))
+	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(et.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(et.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -1,0 +1,9 @@
+type Mutation {
+    createEntTask(input: CreateEntTaskInput!): EntTask!
+    updateEntTask(id: ID!, input:UpdateEntTaskInput!): EntTask!
+    deleteEntTask(id: ID!): EntTask!
+
+    createEntTaskHandler(input: CreateEntTaskHandlerInput!): EntTaskHandler!
+    updateEntTaskHandler(id: ID!, input: UpdateEntTaskHandlerInput!): EntTaskHandler!
+    deleteEntTaskHandler(id: ID!): EntTaskHandler!
+}

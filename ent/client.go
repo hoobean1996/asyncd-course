@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"fs.io/asyncd/ent/enttask"
+	"fs.io/asyncd/ent/enttaskhandler"
 )
 
 // Client is the client that holds all ent builders.
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// EntTask is the client for interacting with the EntTask builders.
 	EntTask *EntTaskClient
+	// EntTaskHandler is the client for interacting with the EntTaskHandler builders.
+	EntTaskHandler *EntTaskHandlerClient
 	// additional fields for node api
 	tables tables
 }
@@ -38,6 +41,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.EntTask = NewEntTaskClient(c.config)
+	c.EntTaskHandler = NewEntTaskHandlerClient(c.config)
 }
 
 type (
@@ -128,9 +132,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		EntTask: NewEntTaskClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		EntTask:        NewEntTaskClient(cfg),
+		EntTaskHandler: NewEntTaskHandlerClient(cfg),
 	}, nil
 }
 
@@ -148,9 +153,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		EntTask: NewEntTaskClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		EntTask:        NewEntTaskClient(cfg),
+		EntTaskHandler: NewEntTaskHandlerClient(cfg),
 	}, nil
 }
 
@@ -180,12 +186,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.EntTask.Use(hooks...)
+	c.EntTaskHandler.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.EntTask.Intercept(interceptors...)
+	c.EntTaskHandler.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -193,6 +201,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *EntTaskMutation:
 		return c.EntTask.mutate(ctx, m)
+	case *EntTaskHandlerMutation:
+		return c.EntTaskHandler.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
 	}
@@ -331,12 +341,145 @@ func (c *EntTaskClient) mutate(ctx context.Context, m *EntTaskMutation) (Value, 
 	}
 }
 
+// EntTaskHandlerClient is a client for the EntTaskHandler schema.
+type EntTaskHandlerClient struct {
+	config
+}
+
+// NewEntTaskHandlerClient returns a client for the EntTaskHandler from the given config.
+func NewEntTaskHandlerClient(c config) *EntTaskHandlerClient {
+	return &EntTaskHandlerClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `enttaskhandler.Hooks(f(g(h())))`.
+func (c *EntTaskHandlerClient) Use(hooks ...Hook) {
+	c.hooks.EntTaskHandler = append(c.hooks.EntTaskHandler, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `enttaskhandler.Intercept(f(g(h())))`.
+func (c *EntTaskHandlerClient) Intercept(interceptors ...Interceptor) {
+	c.inters.EntTaskHandler = append(c.inters.EntTaskHandler, interceptors...)
+}
+
+// Create returns a builder for creating a EntTaskHandler entity.
+func (c *EntTaskHandlerClient) Create() *EntTaskHandlerCreate {
+	mutation := newEntTaskHandlerMutation(c.config, OpCreate)
+	return &EntTaskHandlerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of EntTaskHandler entities.
+func (c *EntTaskHandlerClient) CreateBulk(builders ...*EntTaskHandlerCreate) *EntTaskHandlerCreateBulk {
+	return &EntTaskHandlerCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *EntTaskHandlerClient) MapCreateBulk(slice any, setFunc func(*EntTaskHandlerCreate, int)) *EntTaskHandlerCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &EntTaskHandlerCreateBulk{err: fmt.Errorf("calling to EntTaskHandlerClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*EntTaskHandlerCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &EntTaskHandlerCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for EntTaskHandler.
+func (c *EntTaskHandlerClient) Update() *EntTaskHandlerUpdate {
+	mutation := newEntTaskHandlerMutation(c.config, OpUpdate)
+	return &EntTaskHandlerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *EntTaskHandlerClient) UpdateOne(eth *EntTaskHandler) *EntTaskHandlerUpdateOne {
+	mutation := newEntTaskHandlerMutation(c.config, OpUpdateOne, withEntTaskHandler(eth))
+	return &EntTaskHandlerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *EntTaskHandlerClient) UpdateOneID(id int) *EntTaskHandlerUpdateOne {
+	mutation := newEntTaskHandlerMutation(c.config, OpUpdateOne, withEntTaskHandlerID(id))
+	return &EntTaskHandlerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for EntTaskHandler.
+func (c *EntTaskHandlerClient) Delete() *EntTaskHandlerDelete {
+	mutation := newEntTaskHandlerMutation(c.config, OpDelete)
+	return &EntTaskHandlerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *EntTaskHandlerClient) DeleteOne(eth *EntTaskHandler) *EntTaskHandlerDeleteOne {
+	return c.DeleteOneID(eth.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *EntTaskHandlerClient) DeleteOneID(id int) *EntTaskHandlerDeleteOne {
+	builder := c.Delete().Where(enttaskhandler.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &EntTaskHandlerDeleteOne{builder}
+}
+
+// Query returns a query builder for EntTaskHandler.
+func (c *EntTaskHandlerClient) Query() *EntTaskHandlerQuery {
+	return &EntTaskHandlerQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeEntTaskHandler},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a EntTaskHandler entity by its id.
+func (c *EntTaskHandlerClient) Get(ctx context.Context, id int) (*EntTaskHandler, error) {
+	return c.Query().Where(enttaskhandler.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *EntTaskHandlerClient) GetX(ctx context.Context, id int) *EntTaskHandler {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *EntTaskHandlerClient) Hooks() []Hook {
+	return c.hooks.EntTaskHandler
+}
+
+// Interceptors returns the client interceptors.
+func (c *EntTaskHandlerClient) Interceptors() []Interceptor {
+	return c.inters.EntTaskHandler
+}
+
+func (c *EntTaskHandlerClient) mutate(ctx context.Context, m *EntTaskHandlerMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&EntTaskHandlerCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&EntTaskHandlerUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&EntTaskHandlerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&EntTaskHandlerDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown EntTaskHandler mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		EntTask []ent.Hook
+		EntTask, EntTaskHandler []ent.Hook
 	}
 	inters struct {
-		EntTask []ent.Interceptor
+		EntTask, EntTaskHandler []ent.Interceptor
 	}
 )
